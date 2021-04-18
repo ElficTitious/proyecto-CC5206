@@ -1,0 +1,41 @@
+
+CREACIÓN DE TABLAS
+
+```{r}
+library(readr)
+library(readxl)
+data <- read_csv2("Rendimiento_2020.csv")
+COD_REG <- read_excel("TABLES.xlsx",sheet = "COD_REG")
+COD_PRO <- read_excel("TABLES.xlsx",sheet = "COD_PRO")
+COD_COM <- read_excel("TABLES.xlsx",sheet = "COD_COM")
+COD_DEPE <- read_excel("TABLES.xlsx",sheet = "COD_DEPE")
+COD_DEPE2 <- read_excel("TABLES.xlsx",sheet = "COD_DEPE2")
+RURAL_RBD <- read_excel("TABLES.xlsx",sheet = "RURAL_RBD")
+COD_ENSE <- read_excel("TABLES.xlsx",sheet = "COD_ENSE")
+COD_ENSE2 <- read_excel("TABLES.xlsx",sheet = "COD_ENSE2")
+COD_JOR <- read_excel("TABLES.xlsx",sheet = "COD_JOR")
+COD_DES_CUR <- read_excel("TABLES.xlsx",sheet = "COD_DES_CUR")
+GEN_ALU <- read_excel("TABLES.xlsx",sheet = "GEN_ALU")
+COD_RAMA <- read_excel("TABLES.xlsx",sheet = "COD_RAMA")
+COD_SEC <- read_excel("TABLES.xlsx",sheet = "COD_SEC")
+COD_ESPE <- read_excel("TABLES.xlsx",sheet = "COD_ESPE")
+SIT_FIN <- read_excel("TABLES.xlsx",sheet = "SIT_FIN")
+COD_MEN <- read_excel("TABLES.xlsx",sheet = "COD_MEN")
+```
+
+LIMPIAR CODIGO
+
+```{r}
+columnas_a_borrar <- c("AGNO","RBD","DGV_RBD","NOM_REG_RBD_A","NOM_COM_RBD","COD_DEPROV_RBD","NOM_DEPROV_RBD","FEC_NAC_ALU","ESTADO_ESTAB","NOM_COM_ALU","COD_GRADO","SIT_FIN_R","LET_CUR")
+#COD_TIP_CUR(SI HAY MAS DE UN CURSO JUNTO) Y COD_DES_CUR(SI ES CIENTIFICO HUMANISTA Y TECNICO.  
+data_limpio <- data[,!names(data) %in% columnas_a_borrar]
+data_limpio <- na.omit(data_limpio)
+data_limpio <- data_limpio[data_limpio$PROM_GRAL!=0,]
+#Para especificamente trabajar con tecnicos
+data_tecnico <-data_limpio[ data_limpio$COD_RAMA!=0 & data_limpio$COD_SEC!=0 & data_limpio$COD_ESPE!=0 & data_limpio$COD_MEN!=0,]
+#Limpieza visual de columnas innecesarias.
+columnas_tecnicas<-c("COD_RAMA","COD_SEC","COD_ESPE","COD_MEN")
+data <- data_limpio[,!names(data_limpio) %in% columnas_tecnicas]
+# Guardamos el dataframe como archivo .csv
+write.csv(data, "dataset_limpio.csv", row.names = FALSE)
+```
