@@ -1,0 +1,71 @@
+---
+title: "Boxplots proyecto"
+output: html_notebook
+---
+
+```{r}
+library(readr)
+dataset_limpio <- read.csv("dataset_limpio.csv")
+```
+
+**La idea será realizar boxplots para promedio general y asistencia por región para diversas agrupaciones, por lo tanto primero generamos dataframes que permitan aquello. **
+
+```{r}
+# Primero generamos un dataframe con variables a ser agrupadas promedio general y asistencia, y variables de agrupación codigos de regio y comuna.
+promsPorComuna <- aggregate(cbind(PROM_GRAL, ASISTENCIA) ~ COD_REG_RBD + COD_COM_RBD, dataset_limpio, FUN=mean)
+# Ahora generamos un dataframe con variables a ser agrupadas promedio general y asistencia, y variables de agrupación codigos de tipo de establecimiento y comuna.
+promsPorTipoEstabl <- aggregate(cbind(PROM_GRAL, ASISTENCIA) ~ COD_COM_RBD + COD_DEPE2, dataset_limpio, FUN=mean)
+# Finalmente generamos un dataframe con variables a ser agrupadas promedio general y asistencia, y variables de agrupación codigo de región y nombre establecimiento.
+promsPorEstabl <- aggregate(cbind(PROM_GRAL, ASISTENCIA) ~ NOM_RBD + COD_REG_RBD, dataset_limpio, FUN=mean)
+```
+
+**Vamos ahora con los boxplots.**
+
+```{r}
+# Primero graficamos promedio general por región (no agrupamos por nada, es decir, consideramos alumno por alumno).
+library(ggplot2)
+ggplot(dataset_limpio, aes(x = as.character(COD_REG_RBD), y = PROM_GRAL)) + geom_boxplot() + xlab("Código región") + ylab("Promedio general") + ggtitle("Promedio general de cada alumno por región")
+```
+
+```{r}
+# Ahora graficamos asistencia por región (no agrupamos por nada, es decir, consideramos alumno por alumno).
+library(ggplot2)
+ggplot(dataset_limpio, aes(x = as.character(COD_REG_RBD), y = ASISTENCIA)) + geom_boxplot() + xlab("Código región") + ylab("Asistencia (%)") + ggtitle("Asistencia de cada alumno por región")
+```
+
+```{r}
+# Ahora graficamos promedio general de cada comuna por región.
+library(ggplot2)
+ggplot(promsPorComuna, aes(x = as.character(COD_REG_RBD), y = PROM_GRAL)) + geom_boxplot() + xlab("Código región") + ylab("Promedio general") + ggtitle("Promedio general de cada comuna por región")
+```
+
+```{r}
+# Ahora graficamos promedio de asistencia de cada comuna por región.
+library(ggplot2)
+ggplot(promsPorComuna, aes(x = as.character(COD_REG_RBD), y = ASISTENCIA)) + geom_boxplot() + xlab("Código región") + ylab("Asistencia (%)") + ggtitle("Promedio asistencia de cada comuna por región") + theme(plot.title = element_text(size=12))
+```
+
+```{r}
+# Ahora graficamos promedio general de cada comuna por tipo de establecimiento.
+library(ggplot2)
+ggplot(promsPorTipoEstabl, aes(x = as.character(COD_DEPE2), y = PROM_GRAL)) + geom_boxplot() + xlab("Código tipo de establecimiento") + ylab("Promedio general") + ggtitle("Promedio general de cada comuna por tipo de establecimiento") + theme(plot.title = element_text(size=10))
+```
+
+```{r}
+# Ahora graficamos promedio de asistencia de cada comuna por tipo de establecimiento.
+library(ggplot2)
+ggplot(promsPorTipoEstabl, aes(x = as.character(COD_DEPE2), y = ASISTENCIA)) + geom_boxplot() + xlab("Código tipo de establecimiento") + ylab("Asistencia (%)") + ggtitle("Promedio asistencia de cada comuna por tipo de establecimiento") + theme(plot.title = element_text(size=10))
+```
+
+```{r}
+# Ahora graficamos promedio general de cada establecimiento por región.
+library(ggplot2)
+ggplot(promsPorEstabl, aes(x = as.character(COD_REG_RBD), y = PROM_GRAL)) + geom_boxplot() + xlab("Código región") + ylab("Promedio general") + ggtitle("Promedio general de cada establecimiento por región") + theme(plot.title = element_text(size=10))
+```
+
+```{r}
+# Ahora graficamos promedio asistencia de cada establecimiento por región.
+library(ggplot2)
+ggplot(promsPorEstabl, aes(x = as.character(COD_REG_RBD), y = ASISTENCIA)) + geom_boxplot() + xlab("Código región") + ylab("Asistencia (%)") + ggtitle("Primedio asistencia de cada establecimiento por región") + theme(plot.title = element_text(size=10))
+```
+

@@ -1,0 +1,127 @@
+---
+title: "exploracion_proyecto"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+
+
+```{r}
+ruta_csv <-"C:\\Users\\aguma\\Desktop\\Universidad\\2021-1\\Introduccion_a_la_Mineria_de_Datos\\proyecto\\20210223_Rendimiento_2020_20210131_WEB.csv"
+data <- read_csv2(ruta_csv)
+head(data)
+```
+
+
+```{r}
+#chequeo nulos
+#nulos por columna
+sapply(data, function(x) sum(is.na(x)))
+#total de filas con algún valor nulo
+sum(is.na(data$EDAD_ALU) | is.na(data$NOM_COM_ALU) | is.na(data$SIT_FIN) | is.na(data$SIT_FIN_R))
+
+```
+
+**Valores nulos encontrados en las columnas EDAD_ALU, NOM_COM_ALU, SIT_FIN, SIT_FIN_R.
+Para SIT_FIN y SIT_FIN_R se dice en el documento base que esto indica que no hay información al respecto.
+Para las otras dos columnas no está indicado pero lo mismo se asume.
+De un total de 3164534 filas en la tabla, solo hay 1862 filas con algún valor nulo, por lo que eliminar estas columnas supondría una pérdida de información muy baja.**
+
+```{r}
+#chequeo valores inconsistentes/inesperados
+
+#resumen
+summary(data)
+#valores unicos por columna en tabla, valores unicos esperados
+valoresUnicosPorCol <- sapply(data, function(x) length(unique(x)))
+maxValUnicos <- c(1,NA,NA,NA,16,16,57,NA,NA,NA,NA,6,5,2,4,32,6,8,NA,4,7,4,3164534,3,NA,NA,17,NA,NA,7,20,72,NA,NA,4,5,24)
+#max. valores unicos esperados por columna vs presentes en tabla
+data.frame(valore_unicos_esperados_max=maxValUnicos, valores_unicos_en_tabla=valoresUnicosPorCol)[!is.na(maxValUnicos),]
+
+```
+**
+La idea de este chequeo es comprobar si existen valores fuera de lo permitido.
+
+Del documento explicativo se extraen para las columnas anteriores, el maximo de valores unicos que podrían tener. Por ejemplo, se espera que haya a lo más 16 regiones distintas (en forma de código), y ese es el número registrado para el año 2020. En otros casos no aparecen todos los valores posibles para una columna. "COD_ENSE", que contiene códigos que representan distintos niveles/tipos de enseñanza (como Enseñanza Básica o Enseñanza Media Artística), solo muestra 16 de los 32 valores posibles, lo que no es una inconsistencia. 
+Para las columnas no incluidas en la tabla comparativa, no se conoce (o no tiene sentido hablar de) un máximo de valores únicos.
+El summary indica que las columnas de "EDAD_ALU"(edad alumno), "ASISTENCIA" y "PROM_GRAL"(promedio general) contienen valores en 0. A continuación se revisa más en profundidad. 
+
+**
+
+```{r}
+
+#
+#cantidad de valores de edad en 0
+sum(data$EDAD_ALU==0 & !is.na(data$EDAD_ALU))
+#cantidad de promedios en 0
+sum(data$PROM_GRAL==0)
+#cantidad de valores de asistencia en 0
+sum(data$ASISTENCIA==0)
+#cantidad de filas donde asistencia y promedio son 0
+sum(data$ASISTENCIA==0 & data$PROM_GRAL==0)
+data[data$ASISTENCIA==0 & data$PROM_GRAL>0,]
+#sort(data$MRUN,decreasing = FALSE)
+#consideracion: hay identificadores repetidos (error o mismo alumno?)
+#length(unique(data$MRUN))
+#length(data$MRUN)
+```
+**
+- Existe un único valor de edad en 0.
+- Existen 115617 promedios en 0 y 115346 asistencias en 0%, pero en la gran mayoría de los casos estos valores comparten fila (115336 filas tienen promedio en 0 y asistencia en 0, por lo que son descartables).
+Quedan por lo tanto 10 filas donde la asistencia es 0%, pero el promedio tiene un valor mayor que 0, por lo que podrían ser consideradas (casos reprobados con notas muy bajas  -> la asistencia en 0 parece ser dato y no falta de información). 281 filas tienen en 0 el promedio y no la asistencia (y seguramente no son de utilidad).
+**
+
+```{r}
+#data.frames para tablas
+dataSinPromCeros <- data[data$PROM_GRAL != 0, c("NOM_REG_RBD_A","NOM_COM_RBD","PROM_GRAL","ASISTENCIA","COD_DEPE2")]
+promPorRegion <- aggregate(PROM_GRAL ~ NOM_REG_RBD_A, dataSinPromCeros, FUN=mean)
+promPorComuna <- aggregate(PROM_GRAL ~ NOM_COM_RBD, dataSinPromCeros, FUN=mean)
+promPorTipoCol <- aggregate(PROM_GRAL ~ COD_DEPE2, dataSinPromCeros, FUN=mean)
+asisPorRegion <- aggregate(ASISTENCIA ~ NOM_REG_RBD_A, dataSinPromCeros,FUN=mean)
+asisPorComuna <- aggregate(ASISTENCIA ~ NOM_COM_RBD, dataSinPromCeros,FUN=mean)
+asisPorTipoCol <- aggregate(ASISTENCIA ~ COD_DEPE2, dataSinPromCeros, FUN=mean)
+
+
+regiones <- c("Antofagasta","Araucanía","Atacama","Arica y Parinacota", "Aysén","BioBio","Coquimbo","Los Lagos","O'Higgins","Magallanes","Maule","Ñuble","Los Rios","RM","Tarapacá","Valparaíso")
+tipos <- c("Municipal","Particular Subvencionado","Particular Pagado","Corporación de Administración Delegada","Servicio Local de Educación")
+```
+
+**
+Aquí se hace una revisión preliminar de los datos. Se calcula el promedio de notas y el promedio de asistencia por región, por comuna y por tipo de establecimiento. 
+**
+
+```{r}
+#desviacion promedio por region
+sd(promPorRegion$PROM_GRAL)
+#desviacion promedio por comuna
+sd(promPorComuna$PROM_GRAL)
+#desviacion promedio por tipo colegio
+sd(promPorTipoCol$PROM_GRAL)
+
+#desviacion asistencia por region
+sd(asisPorRegion$ASISTENCIA)
+#desviacion asistencia por comuna
+sd(asisPorComuna$ASISTENCIA)
+#desviacion asistencia por tipo colegio
+sd(asisPorTipoCol$ASISTENCIA)
+```
+
+**
+Se destaca que la variación de notas y asistencia entre regiones es bastante baja. La desviación es mucho mayor al aumentar la granularidad (por comunas) o al calcular agrupando por tipo de establecimiento.
+**
+```{r}
+#tablas
+#promedio por region
+data.frame(region = regiones, promedio = promPorRegion$PROM_GRAL)
+#promedio por tipo de colegio
+data.frame(tipo_establecimiento = tipos, promedio = promPorTipoCol$PROM_GRAL)
+#% asistencia por region
+data.frame(region = regiones, promedio = asisPorRegion$ASISTENCIA)
+#% asistencia por tipo de colegio
+data.frame(tipo_establecimiento = tipos, promedio = asisPorTipoCol$ASISTENCIA)
+```
