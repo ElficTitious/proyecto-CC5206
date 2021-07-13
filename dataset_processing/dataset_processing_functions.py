@@ -120,6 +120,42 @@ def generate_grouped_dataset(dataset_name, year):
         path_file_to_write = os.path.join(this_path, "datasets/datasets_grouped/{}".format(year), file_name)
         
         grouped_datasets_dict[name].to_csv(path_file_to_write, index=False, encoding = "ISO-8859-1")
+
+
+def median_prom_gral_by_year():
+    """Method used for generating a dataframe with the median of
+    PROM_GRAL for each year"""
+
+    this_path = os.path.dirname(os.path.realpath('__file__'))
+
+    years = ["2002", "2003", "2004", "2005", "2006", "2007", "2008", "2009", "2010", "2011", 
+             "2012", "2013", "2014", "2015", "2016", "2017", "2018", "2019", "2020"]
+    
+    median_prom_gral = []
+
+    dataset_file_names = ["rendimiento_{}.csv".format(e) for e in years]
+
+    for dataset_name in dataset_file_names:
+
+        print("Computing median of PROM_GRAL for {}".format(dataset_name))
+
+        path_file_dataset = os.path.join(this_path, "datasets/cleansed", dataset_name)
+        dataframe = pd.read_csv(path_file_dataset, encoding = "ISO-8859-1")
+
+        median = dataframe["PROM_GRAL"].median()
+        median_prom_gral.append(median)
+
+    # Finally we create and write the dataset.
+    data = {"AGNO" : years, "MEDIAN_PROM_GRAL" : median_prom_gral}
+    df_median_prom_gral = pd.DataFrame(data)
+
+    file_name = "median_prom_gral_by_year.csv"
+    print("Writing ", file_name)
+    path_file_to_write = os.path.join(this_path, "datasets", file_name)
+    df_median_prom_gral.to_csv(path_file_to_write, index=False, encoding = "ISO-8859-1")
+
+
+
         
        
      
