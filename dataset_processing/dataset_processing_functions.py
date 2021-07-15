@@ -33,9 +33,9 @@ def cleanse_dataset(dataset_name):
     
     # Next we drop the columns we dont use.
     all_columns = list(dataframe)
-    columns_to_keep = ["NOM_RBD", "COD_REG_RBD", "COD_COM_RBD", "COD_DEPE", 
-                       "COD_GRADO", "COD_ENSE", "MRUN", "AGNO", "PROM_GRAL",
-                       "ASISTENCIA", "RURAL_RBD", "SIT_FIN"]
+    columns_to_keep = ["AGNO", "NOM_RBD", "RURAL_RBD", "COD_DEPE", "COD_REG_RBD", 
+                       "COD_COM_RBD", "COD_GRADO", "COD_ENSE", "MRUN",
+                       "ASISTENCIA", "PROM_GRAL", "SIT_FIN"]
     columns_to_drop = list(set(all_columns) - set(columns_to_keep))
     dataframe.drop(columns_to_drop, axis=1, inplace=True)
     
@@ -66,6 +66,9 @@ def cleanse_dataset(dataset_name):
                   "MRUN" : "int64", "AGNO" : "int64", "PROM_GRAL" : "float64", 
                   "ASISTENCIA" : "int64", "SIT_FIN" : "object"}
     dataframe = dataframe.astype(types_dict)
+
+    # We reorder columns to keep consistency
+    dataframe = dataframe.reindex(columns=columns_to_keep)
 
     # Finally we write the cleansed dataset.
     path_file_to_write = os.path.join(this_path, "datasets/cleansed", dataset_name)

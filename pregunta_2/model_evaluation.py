@@ -5,7 +5,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.linear_model import BayesianRidge
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.linear_model import ElasticNet
-from sklearn.linear_model import SGDRegressor
 from sklearn.metrics import mean_absolute_error, mean_squared_error
 from pregunta_2.utilities import *
 
@@ -60,16 +59,16 @@ def evaluate(dataframe : pd.DataFrame) -> pd.DataFrame:
     # prediction (assigning each instance to the median value of the
     # training set y_train).
     median = np.median(y_train)
-    naive_rmsl = np.sqrt(np.mean((median - y_test) ** 2))
-    naive_mal = np.mean(abs(median - y_test))
-    result.loc["Naive"] = [naive_rmsl, naive_mal]
+    naive_rmse = np.sqrt(np.mean((median - y_test) ** 2))
+    naive_mae = np.mean(abs(median - y_test))
+    result.loc["Naive"] = [naive_rmse, naive_mae]
 
     return result
 
 
 if __name__ == "__main__":
 
-    dataframe_2002 = csv_to_df(2018)
+    dataframe_2002 = csv_to_df(2002)
     dataframe_2002 = encode_categorical_data(dataframe_2002)
     results = evaluate(dataframe_2002)
     print(results)
